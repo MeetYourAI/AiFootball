@@ -1,0 +1,54 @@
+// JavaScript Implementation of AI Superfan Predictor
+const express = require('express');
+const openai = require('openai');
+const fs = require('fs');
+
+const app = express();
+app.use(express.json());
+
+// OpenAI API Configuration
+openai.apiKey = 'your-openai-api-key';
+
+// Mock user behavior data for demonstration
+const userBehaviorData = {
+    favoriteTeams: ['Manchester United', 'FC Barcelona'],
+    gameWatchingHabits: ['Watches live matches every weekend', 'Follows highlights on weekdays'],
+    favoritePlayers: ['Lionel Messi', 'Cristiano Ronaldo'],
+};
+
+// Function to Predict Football Soulmate
+async function predictFootballSoulmate(userData) {
+    const prompt = `Based on the following user behavior data:
+    - Favorite Teams: ${userData.favoriteTeams.join(', ')}
+    - Game-Watching Habits: ${userData.gameWatchingHabits.join(', ')}
+    - Favorite Players: ${userData.favoritePlayers.join(', ')}
+    Predict their ultimate football soulmate (player or team) and generate a fun profile.`;
+
+    const response = await openai.Completion.create({
+        engine: 'text-davinci-003',
+        prompt,
+        max_tokens: 150,
+    });
+
+    return response.choices[0].text.trim();
+}
+
+// Endpoint to Get Predicted Football Soulmate
+app.post('/predict_soulmate', async (req, res) => {
+    const userData = req.body;
+
+    if (!userData.favoriteTeams || !userData.gameWatchingHabits || !userData.favoritePlayers) {
+        return res.status(400).json({ error: 'Incomplete user behavior data.' });
+    }
+
+    try {
+        const prediction = await predictFootballSoulmate(userData);
+        res.json({ prediction });
+    } catch (error) {
+        console.error('Error predicting soulmate:', error);
+        res.status(500).json({ error: 'Failed to predict football soulmate.' });
+    }
+});
+
+// Start the Server
+app.listen(3000, () => console.log('AI Superfan Predictor running on port 3000.'));
