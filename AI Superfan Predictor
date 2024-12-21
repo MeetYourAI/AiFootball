@@ -66,7 +66,15 @@ app.post('/predict_soulmate/:id', async (req, res) => {
 
     try {
         const prediction = await predictFootballSoulmate(user);
-        res.json({ prediction });
+        res.json({
+            user: {
+                id: user.id,
+                favoriteTeams: user.favoriteTeams,
+                gameWatchingHabits: user.gameWatchingHabits,
+                favoritePlayers: user.favoritePlayers,
+            },
+            prediction,
+        });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -75,6 +83,19 @@ app.post('/predict_soulmate/:id', async (req, res) => {
 // API endpoint to list all users
 app.get('/users', (req, res) => {
     res.json(userData);
+});
+
+// New endpoint to delete user data
+app.delete('/delete_user/:id', (req, res) => {
+    const userId = parseInt(req.params.id);
+    const userIndex = userData.findIndex(u => u.id === userId);
+
+    if (userIndex === -1) {
+        return res.status(404).json({ error: 'User not found.' });
+    }
+
+    userData.splice(userIndex, 1);
+    res.json({ message: 'User data deleted successfully.' });
 });
 
 // Start the server
@@ -86,4 +107,4 @@ app.listen(PORT, () => {
 // Instructions for running:
 // 1. Replace 'your-openai-api-key' with your actual OpenAI API key.
 // 2. Start the server using `node <filename>.js`.
-// 3. Use endpoints to add data (/add_user_behavior), predict (/predict_soulmate/:id), and list users (/users).
+// 3. Use endpoints to add data (/add_user_behavior), predict (/predict_soulmate/:id), list users (/users), and delete data (/delete_user/:id).
